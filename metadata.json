@@ -1,0 +1,5 @@
+{
+  "name": "Ant Buster Defense",
+  "description": "A mobile-friendly tower defense game where you protect your picnic cake from hungry ants using various defensive turrets. Features AI-generated wave taunts.",
+  "requestFramePermissions": []
+}
