@@ -96,8 +96,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       
       let count = 0;
       
-      if (wave === 100) {
-        // BOSS WAVE
+      if (wave % 10 === 0) {
+        // BOSS WAVE (10, 20, 30)
         count = 1;
       } else {
         // Normal Wave
@@ -150,13 +150,15 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         let scale = 1.0;
         let tier = Math.floor(wave / 10);
 
-        if (wave === 100 && antsToSpawnRef.current === 1) {
-            // THE BOSS
+        if (wave % 10 === 0 && antsToSpawnRef.current === 1) {
+            // THE BOSS (10, 20, 30)
             isBoss = true;
-            hp = 80000; // Massive HP
-            speed = 0.4; // Very Slow
-            scale = 4.0; // Huge
-            tier = 20; // Ultra Evil
+            const bossLevel = wave / 10; // 1, 2, or 3
+            // Scale Boss Stats
+            hp = 4000 * Math.pow(bossLevel, 2.8); // Wave 10: 4000, Wave 20: ~27000, Wave 30: ~86000
+            speed = 0.5 - (bossLevel * 0.05); // Very Slow
+            scale = 2.0 + (bossLevel * 0.8); // 2.8, 3.6, 4.4 (Huge)
+            tier = 10 + (bossLevel * 5); // Ultra Evil Visuals
         } else {
             // Normal Logic
             const hpMultiplier = 1 + (wave * 0.5); 
@@ -216,7 +218,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         // Reached Cake
         ant.active = false;
         setLives(l => {
-          const dmg = ant.isBoss ? 100 : 1; // Boss kills instantly
+          const dmg = ant.isBoss ? 100 : 1; // Boss kills instantly (100 damage > max lives)
           const newLives = l - dmg;
           if (newLives <= 0) {
              setGameState('GAMEOVER');

@@ -94,7 +94,7 @@ export const ROUTES = {
 export const INITIAL_LIVES = 10;
 export const INITIAL_MONEY = 120;
 export const FPS = 60;
-export const MAX_WAVES = 100;
+export const MAX_WAVES = 30;
 
 // Sprites
 export const ANT_SPRITE = "data:image/svg+xml,%3Csvg width='64' height='64' viewBox='0 0 64 64' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20 L8 12 M44 20 L56 12 M20 32 L4 32 M44 32 L60 32 M20 44 L8 52 M44 44 L56 52' stroke='%233e2723' stroke-width='4' stroke-linecap='round' /%3E%3Cellipse cx='32' cy='16' rx='9' ry='7' fill='%235d4037' /%3E%3Cellipse cx='32' cy='32' rx='7' ry='9' fill='%234e342e' /%3E%3Cellipse cx='32' cy='50' rx='11' ry='14' fill='%233e2723' /%3E%3Ccircle cx='29' cy='13' r='2' fill='red' /%3E%3Ccircle cx='35' cy='13' r='2' fill='red' /%3E%3Cpath d='M27 9 L25 3 M37 9 L39 3' stroke='%235d4037' stroke-width='2' /%3E%3C/svg%3E";
