@@ -4,7 +4,9 @@ export enum TowerType {
   BASIC = 'BASIC',
   RAPID = 'RAPID',
   SNIPER = 'SNIPER',
-  BLAST = 'BLAST'
+  BLAST = 'BLAST',
+  ICE = 'ICE',
+  FIRE = 'FIRE'
 }
 
 export interface TowerConfig {
@@ -27,8 +29,12 @@ export interface Ant extends Entity {
   hp: number;
   maxHp: number;
   speed: number;
+  originalSpeed: number; // For slow reset
   pathIndex: number; // Current target node in path
-  frozen?: number; // Frames remaining frozen
+  slowTimer: number; // Frames remaining slow
+  scale: number; // Visual size scale
+  tier: number; // Visual tier for evil effects
+  isBoss?: boolean;
 }
 
 export interface Tower extends Entity {
@@ -44,6 +50,7 @@ export interface Projectile extends Entity {
   color: string;
   radius: number;
   areaOfEffect?: number;
+  effectType?: 'SLOW' | 'BURN' | 'NONE';
 }
 
 export interface Particle extends Entity {

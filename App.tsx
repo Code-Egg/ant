@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { GameCanvas } from './components/GameCanvas';
 import { UIOverlay } from './components/UIOverlay';
 import { GameState, TowerType } from './types';
-import { INITIAL_LIVES, INITIAL_MONEY } from './constants';
+import { INITIAL_LIVES, INITIAL_MONEY, ROUTES } from './constants';
 import { getWaveIntro, getGameOverMessage } from './services/geminiService';
 
 const App: React.FC = () => {
@@ -12,11 +12,18 @@ const App: React.FC = () => {
   const [wave, setWave] = useState(0);
   const [selectedTower, setSelectedTower] = useState<TowerType | null>(null);
   const [flavorText, setFlavorText] = useState("");
+  const [currentPath, setCurrentPath] = useState(ROUTES.route1);
 
-  const startGame = () => {
+  const startGame = (routeIndex: number) => {
     setLives(INITIAL_LIVES);
     setMoney(INITIAL_MONEY);
     setWave(1);
+    
+    // Select Route
+    if (routeIndex === 1) setCurrentPath(ROUTES.route2);
+    else if (routeIndex === 2) setCurrentPath(ROUTES.route3);
+    else setCurrentPath(ROUTES.route1);
+
     setGameState('PLAYING');
     triggerWaveIntro(1);
   };
@@ -28,7 +35,6 @@ const App: React.FC = () => {
   };
 
   const triggerWaveIntro = async (w: number) => {
-    // Simple mock or API call
     setFlavorText(`Wave ${w} Starting...`);
     const text = await getWaveIntro(w, w > 5 ? "Hard" : "Easy");
     setFlavorText(text);
@@ -41,9 +47,25 @@ const App: React.FC = () => {
       triggerWaveIntro(nextWave);
       return nextWave;
     });
-    // Wave completion bonus
     setMoney(m => m + 50); 
+    setLives(prev => {
+      if (prev < INITIAL_LIVES) {
+        return prev + 1;
+      }
+      return prev;
+    });
   }, []);
+
+  const handleNextWave = useCallback(() => {
+      if (gameState === 'PLAYING') {
+          setWave(prev => {
+             const next = prev + 1;
+             triggerWaveIntro(next);
+             setMoney(m => m + 20); // Small bonus for rushing
+             return next;
+          });
+      }
+  }, [gameState]);
 
   const handleGameOver = useCallback(async () => {
       setGameState('GAMEOVER');
@@ -51,7 +73,6 @@ const App: React.FC = () => {
       setFlavorText(text);
   }, [wave, money]);
 
-  // Hook to detect game over state change from canvas
   useEffect(() => {
     if (gameState === 'GAMEOVER') {
       handleGameOver();
@@ -72,6 +93,7 @@ const App: React.FC = () => {
         setWave={setWave}
         onWaveComplete={handleWaveComplete}
         gameSpeed={1}
+        pathPoints={currentPath}
       />
       
       <UIOverlay 
@@ -84,6 +106,7 @@ const App: React.FC = () => {
         startGame={startGame}
         resetGame={resetGame}
         flavorText={flavorText}
+        onNextWave={handleNextWave}
       />
     </div>
   );

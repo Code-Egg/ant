@@ -1,7 +1,7 @@
 import React from 'react';
 import { TowerType, GameState } from '../types';
-import { TOWER_TYPES } from '../constants';
-import { Shield, Coins, Heart, Play, RefreshCw, Zap } from 'lucide-react';
+import { TOWER_TYPES, MAX_WAVES } from '../constants';
+import { Shield, Coins, Heart, Play, RefreshCw, Zap, Flame, Snowflake, Map as MapIcon } from 'lucide-react';
 
 interface UIOverlayProps {
   gameState: GameState;
@@ -10,29 +10,49 @@ interface UIOverlayProps {
   wave: number;
   selectedTower: TowerType | null;
   setSelectedTower: (t: TowerType | null) => void;
-  startGame: () => void;
+  startGame: (routeIndex: number) => void;
   resetGame: () => void;
   flavorText: string;
+  onNextWave: () => void;
 }
 
 export const UIOverlay: React.FC<UIOverlayProps> = ({
-  gameState, money, lives, wave, selectedTower, setSelectedTower, startGame, resetGame, flavorText
+  gameState, money, lives, wave, selectedTower, setSelectedTower, startGame, resetGame, flavorText, onNextWave
 }) => {
+  
   if (gameState === 'MENU') {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
-        <div className="text-center p-8 bg-slate-800 rounded-2xl border border-slate-600 shadow-2xl max-w-sm mx-4">
+        <div className="text-center p-8 bg-slate-800 rounded-2xl border border-slate-600 shadow-2xl max-w-md mx-4 w-full">
           <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-2">
             ANT BUSTER
           </h1>
           <p className="text-slate-400 mb-8">Defend the Cake from the Colony!</p>
-          <button 
-            onClick={startGame}
-            className="flex items-center justify-center w-full gap-2 px-8 py-4 bg-green-500 hover:bg-green-600 active:bg-green-700 text-slate-900 font-bold rounded-xl transition-all transform active:scale-95"
-          >
-            <Play size={24} />
-            START GAME
-          </button>
+          
+          <div className="space-y-4">
+            <p className="text-white font-bold mb-2 uppercase tracking-widest text-sm">Select Operation Zone</p>
+            <button 
+              onClick={() => startGame(0)}
+              className="flex items-center justify-between w-full px-6 py-4 bg-slate-700 hover:bg-green-600 text-white font-bold rounded-xl transition-all hover:scale-105 group"
+            >
+              <span className="flex items-center gap-3"><MapIcon size={20}/> Route Alpha</span>
+              <span className="text-xs bg-black/30 px-2 py-1 rounded group-hover:bg-black/10">Classic</span>
+            </button>
+            <button 
+              onClick={() => startGame(1)}
+              className="flex items-center justify-between w-full px-6 py-4 bg-slate-700 hover:bg-yellow-600 text-white font-bold rounded-xl transition-all hover:scale-105 group"
+            >
+              <span className="flex items-center gap-3"><MapIcon size={20}/> Route Beta</span>
+              <span className="text-xs bg-black/30 px-2 py-1 rounded group-hover:bg-black/10">ZigZag</span>
+            </button>
+            <button 
+              onClick={() => startGame(2)}
+              className="flex items-center justify-between w-full px-6 py-4 bg-slate-700 hover:bg-red-600 text-white font-bold rounded-xl transition-all hover:scale-105 group"
+            >
+              <span className="flex items-center gap-3"><MapIcon size={20}/> Route Gamma</span>
+              <span className="text-xs bg-black/30 px-2 py-1 rounded group-hover:bg-black/10">Loop</span>
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -73,9 +93,18 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
           </div>
         </div>
         
-        <div className="text-right">
-          <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">Wave</div>
-          <div className="text-3xl font-black text-white leading-none">{wave}</div>
+        <div className="flex items-center gap-4">
+            <button 
+                onClick={onNextWave}
+                className="bg-yellow-500 hover:bg-yellow-400 text-black p-2 rounded-full shadow-lg active:scale-95 transition-transform"
+                title="Send Next Wave Immediately"
+            >
+                <Zap size={24} fill="currentColor" />
+            </button>
+            <div className="text-right">
+            <div className="text-sm font-bold text-slate-400 uppercase tracking-widest">Wave</div>
+            <div className="text-3xl font-black text-white leading-none">{wave} / {MAX_WAVES}</div>
+            </div>
         </div>
       </div>
 
@@ -114,6 +143,8 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
                     {tower.type === TowerType.RAPID && <div className="w-3 h-3 bg-black/30 grid grid-cols-2 gap-0.5" />}
                     {tower.type === TowerType.SNIPER && <div className="w-1 h-6 bg-black/30 rounded-full" />}
                     {tower.type === TowerType.BLAST && <div className="w-4 h-4 bg-black/30 rounded-full border-2 border-black/20" />}
+                    {tower.type === TowerType.ICE && <Snowflake size={16} className="text-black/50" />}
+                    {tower.type === TowerType.FIRE && <Flame size={16} className="text-black/50 fill-black/50" />}
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider">{tower.name}</span>
                 <span className={`text-xs font-mono font-bold ${canAfford ? 'text-yellow-400' : 'text-red-400'}`}>
