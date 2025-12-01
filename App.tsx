@@ -4,6 +4,7 @@ import { UIOverlay } from './components/UIOverlay';
 import { GameState, TowerType } from './types';
 import { INITIAL_LIVES, INITIAL_MONEY, ROUTES } from './constants';
 import { getWaveIntro, getGameOverMessage } from './services/geminiService';
+import { audioManager } from './services/audioService';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>('MENU');
@@ -26,6 +27,7 @@ const App: React.FC = () => {
 
     setGameState('PLAYING');
     triggerWaveIntro(1);
+    audioManager.playWaveStart();
   };
 
   const resetGame = () => {
@@ -54,6 +56,7 @@ const App: React.FC = () => {
       }
       return prev;
     });
+    audioManager.playWaveStart();
   }, []);
 
   const handleNextWave = useCallback(() => {
@@ -64,11 +67,13 @@ const App: React.FC = () => {
              setMoney(m => m + 20); // Small bonus for rushing
              return next;
           });
+          audioManager.playWaveStart();
       }
   }, [gameState]);
 
   const handleGameOver = useCallback(async () => {
       setGameState('GAMEOVER');
+      audioManager.playGameOver();
       const text = await getGameOverMessage(wave, money);
       setFlavorText(text);
   }, [wave, money]);

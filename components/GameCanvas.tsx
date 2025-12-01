@@ -6,6 +6,7 @@ import {
   TOWER_TYPES, FPS, INITIAL_LIVES, INITIAL_MONEY,
   ANT_SPRITE, CAKE_SPRITE 
 } from '../constants';
+import { audioManager } from '../services/audioService';
 
 // Helper for distance
 const dist = (v1: Vector2, v2: Vector2) => Math.sqrt(Math.pow(v1.x - v2.x, 2) + Math.pow(v1.y - v2.y, 2));
@@ -217,7 +218,10 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         setLives(l => {
           const dmg = ant.isBoss ? 100 : 1; // Boss kills instantly
           const newLives = l - dmg;
-          if (newLives <= 0) setGameState('GAMEOVER');
+          if (newLives <= 0) {
+             setGameState('GAMEOVER');
+             audioManager.playExplosion();
+          }
           return newLives;
         });
         textsRef.current.push({
@@ -279,6 +283,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
           effectType: config.type === TowerType.ICE ? 'SLOW' : (config.type === TowerType.FIRE ? 'BURN' : 'NONE')
         });
         tower.cooldownTimer = config.cooldown;
+        audioManager.playShoot(tower.type);
       }
     });
 
@@ -300,6 +305,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
         
         if (proj.areaOfEffect && proj.areaOfEffect > 0) {
             // AOE Damage
+            audioManager.playExplosion();
+            createExplosion(target.pos, proj.color, 12);
+
             antsRef.current.forEach(a => {
                 if(a.active && dist(a.pos, target.pos) < (proj.areaOfEffect || 0)) {
                     a.hp -= proj.damage;
@@ -307,7 +315,6 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
                     if (a.hp <= 0) killAnt(a);
                 }
             });
-            createExplosion(target.pos, proj.color, 12);
         } else {
             // Single Target
             target.hp -= proj.damage;
@@ -557,7 +564,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
       createExplosion(ant.pos, '#8B5CF6', ant.isBoss ? 50 : 5);
       if(ant.isBoss) {
           // Boss death celebration
-           textsRef.current.push({
+          audioManager.playExplosion();
+          textsRef.current.push({
               id: Math.random().toString(),
               pos: { ...ant.pos },
               text: "BOSS DEFEATED!",
@@ -566,6 +574,8 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
               color: '#F472B6',
               active: true
           });
+      } else {
+          audioManager.playMoney();
       }
   };
 
@@ -615,10 +625,16 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
              let t = ((clickPos.x - p1.x) * (p2.x - p1.x) + (clickPos.y - p1.y) * (p2.y - p1.y)) / l2;
              t = Math.max(0, Math.min(1, t));
              const proj = { x: p1.x + t * (p2.x - p1.x), y: p1.y + t * (p2.y - p1.y) };
-             if (dist(clickPos, proj) < 30) return;
+             if (dist(clickPos, proj) < 30) {
+                 audioManager.playError();
+                 return; 
+             }
           }
           for (const t of towersRef.current) {
-              if (dist(clickPos, t.pos) < 30) return;
+              if (dist(clickPos, t.pos) < 30) {
+                  audioManager.playError();
+                  return;
+              }
           }
 
           const config = TOWER_TYPES[selectedTower];
@@ -634,6 +650,9 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
               });
               createExplosion(clickPos, '#FFF', 10);
               inspectedTowerIdRef.current = null;
+              audioManager.playBuild();
+          } else {
+              audioManager.playError();
           }
       } else {
           let clickedTower = null;
@@ -643,6 +662,7 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({
                   break;
               }
           }
+          if (clickedTower) audioManager.playSelect();
           inspectedTowerIdRef.current = clickedTower ? clickedTower.id : null;
       }
   };

@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { TowerType, GameState } from '../types';
 import { TOWER_TYPES, MAX_WAVES } from '../constants';
-import { Shield, Coins, Heart, Play, RefreshCw, Zap, Flame, Snowflake, Map as MapIcon } from 'lucide-react';
+import { Shield, Coins, Heart, Play, RefreshCw, Zap, Flame, Snowflake, Map as MapIcon, Volume2, VolumeX } from 'lucide-react';
+import { audioManager } from '../services/audioService';
 
 interface UIOverlayProps {
   gameState: GameState;
@@ -19,11 +20,36 @@ interface UIOverlayProps {
 export const UIOverlay: React.FC<UIOverlayProps> = ({
   gameState, money, lives, wave, selectedTower, setSelectedTower, startGame, resetGame, flavorText, onNextWave
 }) => {
-  
+  const [muted, setMuted] = useState(false);
+
+  const toggleMute = () => {
+      const isMuted = audioManager.toggleMute();
+      setMuted(isMuted);
+  };
+
+  const handleStart = (routeIndex: number) => {
+      audioManager.init();
+      audioManager.playSelect();
+      startGame(routeIndex);
+  };
+
+  const handleTowerSelect = (t: TowerType | null) => {
+      setSelectedTower(t);
+      if (t) audioManager.playSelect();
+  };
+
   if (gameState === 'MENU') {
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-50">
-        <div className="text-center p-8 bg-slate-800 rounded-2xl border border-slate-600 shadow-2xl max-w-md mx-4 w-full">
+        <div className="text-center p-8 bg-slate-800 rounded-2xl border border-slate-600 shadow-2xl max-w-md mx-4 w-full relative">
+          
+          <button 
+            onClick={toggleMute}
+            className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white"
+          >
+            {muted ? <VolumeX size={24} /> : <Volume2 size={24} />}
+          </button>
+
           <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 mb-2">
             ANT BUSTER
           </h1>
@@ -32,21 +58,21 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
           <div className="space-y-4">
             <p className="text-white font-bold mb-2 uppercase tracking-widest text-sm">Select Operation Zone</p>
             <button 
-              onClick={() => startGame(0)}
+              onClick={() => handleStart(0)}
               className="flex items-center justify-between w-full px-6 py-4 bg-slate-700 hover:bg-green-600 text-white font-bold rounded-xl transition-all hover:scale-105 group"
             >
               <span className="flex items-center gap-3"><MapIcon size={20}/> Route Alpha</span>
               <span className="text-xs bg-black/30 px-2 py-1 rounded group-hover:bg-black/10">Classic</span>
             </button>
             <button 
-              onClick={() => startGame(1)}
+              onClick={() => handleStart(1)}
               className="flex items-center justify-between w-full px-6 py-4 bg-slate-700 hover:bg-yellow-600 text-white font-bold rounded-xl transition-all hover:scale-105 group"
             >
               <span className="flex items-center gap-3"><MapIcon size={20}/> Route Beta</span>
               <span className="text-xs bg-black/30 px-2 py-1 rounded group-hover:bg-black/10">ZigZag</span>
             </button>
             <button 
-              onClick={() => startGame(2)}
+              onClick={() => handleStart(2)}
               className="flex items-center justify-between w-full px-6 py-4 bg-slate-700 hover:bg-red-600 text-white font-bold rounded-xl transition-all hover:scale-105 group"
             >
               <span className="flex items-center gap-3"><MapIcon size={20}/> Route Gamma</span>
@@ -91,6 +117,12 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
             <Coins className="text-yellow-400 fill-yellow-400" size={18} />
             <span className="font-mono font-bold text-lg">{money}</span>
           </div>
+          <button 
+            onClick={toggleMute}
+            className="flex items-center justify-center w-10 h-10 bg-slate-800/80 rounded-full border border-slate-600 text-slate-300 hover:text-white"
+          >
+            {muted ? <VolumeX size={18} /> : <Volume2 size={18} />}
+          </button>
         </div>
         
         <div className="flex items-center gap-4">
@@ -127,7 +159,7 @@ export const UIOverlay: React.FC<UIOverlayProps> = ({
             return (
               <button
                 key={tower.type}
-                onClick={() => setSelectedTower(isSelected ? null : tower.type)}
+                onClick={() => handleTowerSelect(isSelected ? null : tower.type)}
                 disabled={!canAfford && !isSelected}
                 className={`
                   relative flex flex-col items-center p-2 rounded-xl border-2 transition-all min-w-[80px]
